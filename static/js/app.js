@@ -332,12 +332,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Register Service Worker
+        // Temporarily disabled for HTTPS development with self-signed certs
+        /*
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/js/sw.js')
                 .then(reg => console.log('Service Worker registered'))
                 .catch(err => console.log('Service Worker not registered', err));
         }
+        */
     };
 
     init();
