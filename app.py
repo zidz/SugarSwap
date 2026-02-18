@@ -183,4 +183,5 @@ def test_page():
 # --- Main Execution ---
 if __name__ == "__main__":
     app.logger.info("Starting SugarSwap Flask application...")
-    app.run(host='::', port=5000, debug=True)
+    # Use SSL for HTTPS to enable camera access from remote devices
+    app.run(host='::', port=5000, debug=True, ssl_context=('certs/cert.pem', 'certs/key.pem'))
