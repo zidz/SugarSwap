@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SugarSwap</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="manifest" href="{{ url_for('serve_manifest') }}">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Onboarding View -->
+        <div id="onboarding-view" class="view active">
+            <h1>Welcome to SugarSwap!</h1>
+            <p>What's your nemesis drink?</p>
+            <input type="text" id="nemesis-drink-input" placeholder="e.g., Coca-Cola">
+            <button id="start-btn">Start Swapping</button>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view">
+            <div id="stats-container">
+                <div class="stat-card">
+                    <h2>Level</h2>
+                    <p id="level-badge">1</p>
+                </div>
+                <div class="stat-card">
+                    <h2>Sugar Saved</h2>
+                    <p><span id="sugar-saved-stat">0</span> g</p>
+                </div>
+                 <div class="stat-card">
+                    <h2>Sugar Cubes</h2>
+                    <p><span id="sugar-cubes-stat">0</span></p>
+                </div>
+                <div class="stat-card">
+                    <h2>Streak</h2>
+                    <p><span id="streak-stat">0</span> days 🔥</p>
+                </div>
+            </div>
+            <div id="xp-container">
+                <div id="xp-bar-container">
+                    <div id="xp-bar"></div>
+                </div>
+                <p><span id="xp-stat">0</span> / <span id="xp-to-next-level-stat">100</span> XP</p>
+            </div>
+            <button id="scan-btn-fab" class="fab">SCAN</button>
+        </div>
+
+        <!-- Scanner View -->
+        <div id="scanner-view" class="view">
+            <div id="qr-reader"></div>
+            <button id="cancel-scan-btn">Cancel</button>
+            <div id="manual-entry-container">
+                <p>Can't scan? Enter barcode manually:</p>
+                <input type="text" id="manual-barcode-input" placeholder="Enter barcode">
+                <button id="manual-submit-btn">Submit</button>
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay">
+            <h2 id="feedback-title"></h2>
+            <p id="feedback-text"></p>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    
+    <!-- App Logic -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
