@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM fully loaded and parsed. Initializing app.js...");
+
     // --- DOM Elements ---
     const views = {
         login: document.getElementById('login-view'),
@@ -267,22 +269,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     registerBtn.addEventListener('click', () => {
+        console.log("Register button clicked."); // DEBUG
         const username = registerUsernameInput.value;
         const password = registerPasswordInput.value;
+
         if (!username || !password) {
+            console.log("Username or password missing."); // DEBUG
             registerErrorMessageDiv.textContent = 'Username and password are required.';
             return;
         }
-        api.register(username, password).then(data => {
-            if (data.status === 'success') {
-                registerForm.style.display = 'none';
-                loginForm.style.display = 'flex';
-                showLoginView();
-                alert('Registration successful! Please log in.');
-            } else {
-                registerErrorMessageDiv.textContent = data.message || 'Registration failed.';
-            }
-        });
+
+        registerErrorMessageDiv.textContent = ''; // Clear previous errors
+        console.log(`Attempting to register user: ${username}`); // DEBUG
+
+        api.register(username, password)
+            .then(data => {
+                console.log("Registration API response:", data); // DEBUG
+                if (data.status === 'success') {
+                    registerForm.style.display = 'none';
+                    loginForm.style.display = 'flex';
+                    showLoginView();
+                    alert('Registration successful! Please log in.');
+                } else {
+                    registerErrorMessageDiv.textContent = data.message || 'Registration failed.';
+                }
+            })
+            .catch(err => {
+                console.error("Registration API call failed:", err); // DEBUG
+                registerErrorMessageDiv.textContent = 'An unexpected error occurred. Please try again.';
+            });
     });
 
     logoutBtn.addEventListener('click', () => {
