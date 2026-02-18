@@ -51,11 +51,13 @@ body {
     justify-content: center;
     text-align: center;
 }
-#login-form-container, #register-form-container {
+
+#login-form, #register-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
+
 #login-view h1 {
     color: var(--primary-color);
     margin-bottom: 30px;
