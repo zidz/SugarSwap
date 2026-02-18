@@ -7,14 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
         dashboard: document.getElementById('dashboard-view'),
         scanner: document.getElementById('scanner-view')
     };
-    const loginForm = document.getElementById('login-form-container');
-    const registerForm = document.getElementById('register-form-container');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
     const showRegisterLink = document.getElementById('show-register-link');
     const showLoginLink = document.getElementById('show-login-link');
     
     // Buttons
-    const loginBtn = document.getElementById('login-btn');
-    const registerBtn = document.getElementById('register-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const scanBtn = document.getElementById('scan-btn-fab');
     const cancelScanBtn = document.getElementById('cancel-scan-btn');
@@ -104,6 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const showLoginView = (errorMessage = '') => {
         errorMessageDiv.textContent = errorMessage;
         registerErrorMessageDiv.textContent = '';
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
         showView('login');
     };
 
@@ -243,16 +243,17 @@ document.addEventListener('DOMContentLoaded', () => {
     showRegisterLink.addEventListener('click', (e) => {
         e.preventDefault();
         loginForm.style.display = 'none';
-        registerForm.style.display = 'flex';
+        registerForm.style.display = 'block';
     });
 
     showLoginLink.addEventListener('click', (e) => {
         e.preventDefault();
         registerForm.style.display = 'none';
-        loginForm.style.display = 'flex';
+        loginForm.style.display = 'block';
     });
 
-    loginBtn.addEventListener('click', () => {
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
         const username = usernameInput.value;
         const password = passwordInput.value;
         if (!username || !password) {
@@ -268,8 +269,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    registerBtn.addEventListener('click', () => {
-        console.log("Register button clicked."); // DEBUG
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        console.log("Register form submitted."); // DEBUG
         const username = registerUsernameInput.value;
         const password = registerPasswordInput.value;
 
@@ -287,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Registration API response:", data); // DEBUG
                 if (data.status === 'success') {
                     registerForm.style.display = 'none';
-                    loginForm.style.display = 'flex';
+                    loginForm.style.display = 'block';
                     showLoginView();
                     alert('Registration successful! Please log in.');
                 } else {

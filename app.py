@@ -2,7 +2,7 @@ import json
 import os
 import logging
 from logging.handlers import RotatingFileHandler
-from flask import Flask, jsonify, render_template, request, session
+from flask import Flask, jsonify, render_template, request, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # --- App Initialization ---
@@ -28,8 +28,12 @@ USERS_FILE = 'users.json'
 def load_users():
     if not os.path.exists(USERS_FILE):
         return {"users": {}}
-    with open(USERS_FILE, 'r') as f:
-        return json.load(f)
+    try:
+        with open(USERS_FILE, 'r') as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        return {"users": {}}
+
 
 def save_users(data):
     with open(USERS_FILE, 'w') as f:
@@ -41,6 +45,9 @@ def save_users(data):
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     data = request.get_json()
+    if not data:
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
+        
     username = data.get('username')
     password = data.get('password')
 
@@ -48,6 +55,9 @@ def register():
         return jsonify({"status": "error", "message": "Username and password are required"}), 400
 
     users_data = load_users()
+    if 'users' not in users_data: # Make it robust
+        users_data['users'] = {}
+
     if username in users_data['users']:
         return jsonify({"status": "error", "message": "Username already exists"}), 409
 
@@ -76,9 +86,9 @@ def login():
     password = data.get('password')
     
     users_data = load_users()
-    user = users_data['users'].get(username)
+    user = users_data.get('users', {}).get(username)
 
-    if user and check_password_hash(user['password'], password):
+    if user and check_password_hash(user.get('password', ''), password):
         session['username'] = username
         app.logger.info(f"User logged in: {username}")
         return jsonify({"status": "success", "username": username})
@@ -108,7 +118,7 @@ def get_user_data():
         return jsonify({"status": "error", "message": "Not logged in"}), 401
     
     users_data = load_users()
-    user_data = users_data['users'].get(username)
+    user_data = users_data.get('users', {}).get(username)
     
     if not user_data:
          return jsonify({"status": "error", "message": "User not found"}), 404
@@ -127,7 +137,7 @@ def save_user_data():
     new_data = request.get_json()
     users_data = load_users()
     
-    if username in users_data['users']:
+    if username in users_data.get('users', {}):
         # Update only the specific fields to avoid overwriting password
         users_data['users'][username]['gamification_state'] = new_data.get('gamification_state')
         users_data['users'][username]['product_cache'] = new_data.get('product_cache')
@@ -156,6 +166,11 @@ def product_proxy(barcode):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route("/manifest.json")
 def serve_manifest():

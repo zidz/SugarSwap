@@ -6,28 +6,29 @@
     <title>SugarSwap</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="manifest" href="{{ url_for('serve_manifest') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
     <div id="app-container">
         <!-- Login/Register View -->
         <div id="login-view" class="view active">
             <h1>SugarSwap</h1>
-            <div id="login-form-container">
+            <form id="login-form">
                 <h2 id="form-title">Login</h2>
                 <div id="error-message" class="error-text"></div>
-                <input type="text" id="username-input" placeholder="Username" required>
-                <input type="password" id="password-input" placeholder="Password" required>
-                <button id="login-btn">Login</button>
+                <input type="text" id="username-input" placeholder="Username" required autocomplete="username">
+                <input type="password" id="password-input" placeholder="Password" required autocomplete="current-password">
+                <button id="login-btn" type="submit">Login</button>
                 <p>Don't have an account? <a href="#" id="show-register-link">Register here</a></p>
-            </div>
-            <div id="register-form-container" style="display: none;">
+            </form>
+            <form id="register-form" style="display: none;">
                 <h2 id="form-title">Register</h2>
                  <div id="register-error-message" class="error-text"></div>
-                <input type="text" id="register-username-input" placeholder="Username" required>
-                <input type="password" id="register-password-input" placeholder="Password" required>
-                <button id="register-btn">Register</button>
+                <input type="text" id="register-username-input" placeholder="Username" required autocomplete="username">
+                <input type="password" id="register-password-input" placeholder="Password" required autocomplete="new-password">
+                <button id="register-btn" type="submit">Register</button>
                 <p>Already have an account? <a href="#" id="show-login-link">Login here</a></p>
-            </div>
+            </form>
         </div>
 
         <!-- Dashboard View -->
