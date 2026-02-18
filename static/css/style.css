@@ -38,44 +38,86 @@ body {
     padding: 20px;
     height: calc(100% - 40px);
     overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .view.active {
-    display: block;
-}
-
-/* Onboarding */
-#onboarding-view {
-    text-align: center;
     display: flex;
     flex-direction: column;
+}
+
+/* Login & Register View */
+#login-view {
     justify-content: center;
-    align-items: center;
+    text-align: center;
 }
-#onboarding-view h1 {
+#login-form-container, #register-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+#login-view h1 {
     color: var(--primary-color);
+    margin-bottom: 30px;
 }
-#nemesis-drink-input {
-    width: 80%;
-    padding: 10px;
-    margin: 20px 0;
+#login-view h2 {
+    color: var(--light-gray);
+    margin-bottom: 10px;
+}
+#login-view input {
+    padding: 12px;
     border-radius: 5px;
     border: 1px solid var(--primary-color);
     background-color: var(--dark-gray);
     color: var(--light-gray);
+    font-size: 1rem;
 }
-#start-btn {
-    padding: 15px 30px;
-    font-size: 1.2rem;
+#login-view button {
+    padding: 12px;
+    font-size: 1.1rem;
     background-color: var(--primary-color);
     color: var(--background-color);
     border: none;
-    border-radius: 50px;
+    border-radius: 5px;
     cursor: pointer;
     transition: transform 0.2s ease;
 }
+#login-view p {
+    margin-top: 20px;
+}
+#login-view a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+.error-text {
+    color: var(--danger-red);
+    min-height: 20px;
+}
+
 
 /* Dashboard */
+#dashboard-view.active {
+    display: block; /* Override flex for dashboard */
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+#welcome-message {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+#logout-btn {
+    background: none;
+    border: 1px solid var(--danger-red);
+    color: var(--danger-red);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
 #stats-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -152,6 +194,9 @@ body {
 }
 
 /* Scanner View */
+#scanner-view.active {
+     display: block; /* Override flex for scanner */
+}
 #scanner-view {
     text-align: center;
 }

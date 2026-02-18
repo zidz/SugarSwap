@@ -9,16 +9,33 @@
 </head>
 <body>
     <div id="app-container">
-        <!-- Onboarding View -->
-        <div id="onboarding-view" class="view active">
-            <h1>Welcome to SugarSwap!</h1>
-            <p>What's your nemesis drink?</p>
-            <input type="text" id="nemesis-drink-input" placeholder="e.g., Coca-Cola">
-            <button id="start-btn">Start Swapping</button>
+        <!-- Login/Register View -->
+        <div id="login-view" class="view active">
+            <h1>SugarSwap</h1>
+            <div id="login-form-container">
+                <h2 id="form-title">Login</h2>
+                <div id="error-message" class="error-text"></div>
+                <input type="text" id="username-input" placeholder="Username" required>
+                <input type="password" id="password-input" placeholder="Password" required>
+                <button id="login-btn">Login</button>
+                <p>Don't have an account? <a href="#" id="show-register-link">Register here</a></p>
+            </div>
+            <div id="register-form-container" style="display: none;">
+                <h2 id="form-title">Register</h2>
+                 <div id="register-error-message" class="error-text"></div>
+                <input type="text" id="register-username-input" placeholder="Username" required>
+                <input type="password" id="register-password-input" placeholder="Password" required>
+                <button id="register-btn">Register</button>
+                <p>Already have an account? <a href="#" id="show-login-link">Login here</a></p>
+            </div>
         </div>
 
         <!-- Dashboard View -->
         <div id="dashboard-view" class="view">
+            <div class="header">
+                <span id="welcome-message"></span>
+                <button id="logout-btn">Logout</button>
+            </div>
             <div id="stats-container">
                 <div class="stat-card">
                     <h2>Level</h2>
@@ -43,6 +60,7 @@
                 </div>
                 <p><span id="xp-stat">0</span> / <span id="xp-to-next-level-stat">100</span> XP</p>
             </div>
+            <!-- FAB moved inside dashboard view -->
             <button id="scan-btn-fab" class="fab">
                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-camera">
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>

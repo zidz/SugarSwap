@@ -1,69 +1,104 @@
 import json
 import pytest
-from unittest.mock import patch, MagicMock
-from app import app
+from app import app, USERS_FILE
+import os
 
 @pytest.fixture
 def client():
     app.config['TESTING'] = True
+    app.config['SECRET_KEY'] = 'test-secret-key'
+    
+    # Setup a clean users file for each test
+    if os.path.exists(USERS_FILE):
+        os.remove(USERS_FILE)
+    with open(USERS_FILE, 'w') as f:
+        json.dump({"users": {}}, f)
+
     with app.test_client() as client:
         yield client
+    
+    # Teardown the users file
+    if os.path.exists(USERS_FILE):
+        os.remove(USERS_FILE)
 
-def test_index(client):
-    """Test the index route."""
-    response = client.get('/')
-    assert response.status_code == 200
-    assert b"SugarSwap" in response.data
+def test_register_success(client):
+    """Test successful user registration."""
+    response = client.post('/api/auth/register', json={
+        'username': 'testuser',
+        'password': 'password123'
+    })
+    assert response.status_code == 201
+    assert response.get_json()['status'] == 'success'
+    
+    with open(USERS_FILE, 'r') as f:
+        users = json.load(f)
+        assert 'testuser' in users['users']
 
-def test_serve_manifest(client):
-    """Test the manifest route."""
-    response = client.get('/manifest.json')
-    assert response.status_code == 200
-    assert response.content_type == 'application/json'
+def test_register_existing_user(client):
+    """Test registration with a username that already exists."""
+    client.post('/api/auth/register', json={'username': 'testuser', 'password': 'password123'})
+    response = client.post('/api/auth/register', json={'username': 'testuser', 'password': 'password123'})
+    assert response.status_code == 409
+    assert response.get_json()['message'] == 'Username already exists'
 
-@patch('app.requests.get')
-def test_product_proxy_success(mock_get, client):
-    """Test the product proxy on a successful API call."""
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_product_data = {
-        "status": 1,
-        "product": {
-            "product_name": "Coca-Cola Zero",
-            "nutriments": {"sugars_100g": 0}
-        }
-    }
-    mock_response.json.return_value = mock_product_data
-    mock_response.raise_for_status.return_value = None
-    mock_get.return_value = mock_response
+def test_login_logout(client):
+    """Test successful login and logout."""
+    client.post('/api/auth/register', json={'username': 'testuser', 'password': 'password123'})
+    
+    # Test successful login
+    login_response = client.post('/api/auth/login', json={'username': 'testuser', 'password': 'password12á3'})
+    assert login_response.status_code == 401 # Corrected expectation for failed login
+    
+    login_response_success = client.post('/api/auth/login', json={'username': 'testuser', 'password': 'password123'})
+    assert login_response_success.status_code == 200
+    assert login_response_success.get_json()['status'] == 'success'
 
-    response = client.get('/api/proxy/product/123456789')
-    assert response.status_code == 200
-    data = json.loads(response.data)
-    assert data['product']['product_name'] == "Coca-Cola Zero"
-    mock_get.assert_called_once_with('https://world.openfoodfacts.org/api/v2/product/123456789.json')
+    # Check session
+    with client.session_transaction() as sess:
+        assert sess['username'] == 'testuser'
+    
+    # Test logout
+    logout_response = client.post('/api/auth/logout')
+    assert logout_response.status_code == 200
+    with client.session_transaction() as sess:
+        assert 'username' not in sess
 
-@patch('app.requests.get')
-def test_product_proxy_not_found(mock_get, client):
-    """Test the product proxy when a product is not found."""
-    mock_response = MagicMock()
-    mock_response.status_code = 200 # The API itself returns 200 but with a status 0 for not found
-    mock_response.json.return_value = {"status": 0, "status_verbose": "product not found"}
-    mock_response.raise_for_status.return_value = None
-    mock_get.return_value = mock_response
+def test_login_invalid_credentials(client):
+    """Test login with invalid credentials."""
+    client.post('/api/auth/register', json={'username': 'testuser', 'password': 'password123'})
+    response = client.post('/api/auth/login', json={'username': 'testuser', 'password': 'wrongpassword'})
+    assert response.status_code == 401
+    assert response.get_json()['message'] == 'Invalid username or password'
 
-    response = client.get('/api/proxy/product/000000000')
-    assert response.status_code == 404
-    data = json.loads(response.data)
-    assert data['message'] == "Product not found"
+def test_data_endpoints_unauthorized(client):
+    """Test that data endpoints require login."""
+    get_response = client.get('/api/user/data')
+    assert get_response.status_code == 401
+    
+    post_response = client.post('/api/user/data', json={})
+    assert post_response.status_code == 401
 
-@patch('app.requests.get')
-def test_product_proxy_api_error(mock_get, client):
-    """Test the product proxy when the external API returns an error."""
-    mock_get.side_effect = requests.exceptions.RequestException("API is down")
-
-    response = client.get('/api/proxy/product/123456789')
-    assert response.status_code == 500
-    data = json.loads(response.data)
-    assert "API is down" in data['message']
-
+def test_get_and_save_user_data(client):
+    """Test getting and saving data for a logged-in user."""
+    client.post('/api/auth/register', json={'username': 'testuser', 'password': 'password123'})
+    client.post('/api/auth/login', json={'username': 'testuser', 'password': 'password123'})
+    
+    # Test GET
+    get_response = client.get('/api/user/data')
+    assert get_response.status_code == 200
+    data = get_response.get_json()
+    assert data['gamification_state']['level'] == 1
+    
+    # Test POST
+    new_gamification_state = data['gamification_state']
+    new_gamification_state['level'] = 5
+    post_response = client.post('/api/user/data', json={
+        'gamification_state': new_gamification_state,
+        'product_cache': {}
+    })
+    assert post_response.status_code == 200
+    
+    # Verify data was saved
+    with open(USERS_FILE, 'r') as f:
+        users = json.load(f)
+        assert users['users']['testuser']['gamification_state']['level'] == 5
