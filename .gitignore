@@ -1,0 +1,18 @@
+# Environment
+.env
+venv/
+__pycache__/
+
+# Logs
+logs/
+*.log
+
+# Application specific
+app.pid
+
+# OS generated files
+.DS_Store
+.vscode/
+
+# Package managers
+node_modules/ # If Node.js packages were used
