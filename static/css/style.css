@@ -6,6 +6,7 @@
     --dark-gray: #333;
     --light-gray: #f4f4f4;
     --xp-gold: #ffd700;
+    --danger-red: #ff3b30;
 }
 
 body {
@@ -36,6 +37,7 @@ body {
     display: none;
     padding: 20px;
     height: calc(100% - 40px);
+    overflow-y: auto;
 }
 
 .view.active {
@@ -45,6 +47,10 @@ body {
 /* Onboarding */
 #onboarding-view {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 #onboarding-view h1 {
     color: var(--primary-color);
@@ -55,6 +61,8 @@ body {
     margin: 20px 0;
     border-radius: 5px;
     border: 1px solid var(--primary-color);
+    background-color: var(--dark-gray);
+    color: var(--light-gray);
 }
 #start-btn {
     padding: 15px 30px;
@@ -97,6 +105,7 @@ body {
 
 #xp-container {
     text-align: center;
+    margin-bottom: 120px; /* Space for FAB */
 }
 
 #xp-bar-container {
@@ -126,11 +135,16 @@ body {
     color: var(--background-color);
     border-radius: 50%;
     border: none;
-    font-size: 1.2rem;
-    font-weight: bold;
     box-shadow: 0 5px 15px rgba(0, 255, 0, 0.4);
     cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     transition: transform 0.1s ease;
+}
+
+.fab svg {
+    color: var(--background-color);
 }
 
 .fab:active {
@@ -141,28 +155,50 @@ body {
 #scanner-view {
     text-align: center;
 }
+#scanner-view h2 {
+    color: var(--primary-color);
+}
+#scanner-help-text {
+    font-size: 0.9rem;
+    color: #ccc;
+}
 #qr-reader {
     width: 90%;
     margin: 20px auto;
     border: 2px solid var(--primary-color);
     border-radius: 10px;
 }
+#qr-reader video {
+    border-radius: 8px; /* Smooth the edges of the video feed */
+}
+
 #cancel-scan-btn, #manual-submit-btn {
     padding: 10px 20px;
     font-size: 1rem;
-    background-color: #ff3b30;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     margin-top: 15px;
 }
+#cancel-scan-btn {
+    background-color: var(--danger-red);
+}
+#manual-submit-btn {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+}
+
 #manual-entry-container {
     margin-top: 30px;
 }
 #manual-barcode-input {
     padding: 8px;
     width: 70%;
+    background-color: var(--dark-gray);
+    color: var(--light-gray);
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
 }
 
 

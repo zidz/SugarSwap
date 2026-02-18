@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- App State ---
     let state = {};
+    let html5QrCode;
     const NEMESIS_SUGAR_PER_100ML = 10.6; // e.g., Coca-Cola
 
     // --- Database (LocalStorage for simplicity) ---
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const xpForNextLevel = gamification.xpForLevel(state.gamification_state.level + 1);
             if (state.gamification_state.current_xp >= xpForNextLevel) {
                 state.gamification_state.level++;
-                // state.gamification_state.current_xp -= xpForNextLevel; // Resetting XP on level up can be demotivating
+                // state.gamification_state.current_xp -= xpForNextLevel; // Resetting XP can be demotivating
                 playSound('jackpot_win.mp3'); 
                 showFeedback('LEVEL UP!', `You are now Level ${state.gamification_state.level}!`);
             }
@@ -130,17 +131,41 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Scanner Logic ---
-    let html5QrCode;
     const startScanner = () => {
         showView('scanner');
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert("Your browser does not support camera access, which is required for scanning. Please use manual entry.");
+            return;
+        }
+
         html5QrCode = new Html5Qrcode("qr-reader");
-        const config = { fps: 10, qrbox: { width: 250, height: 150 } };
-        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanError);
+        const config = { 
+            fps: 10, 
+            qrbox: { width: 250, height: 150 },
+            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA] 
+        };
+
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess,
+            (errorMessage) => { 
+                console.log(`Non-fatal QR Code scan error: ${errorMessage}`);
+            }
+        ).catch((err) => {
+            console.error(`Unable to start scanning, error: ${err}`);
+            alert(`Error starting camera: ${err}. Please ensure you have granted camera permissions to this site.`);
+            stopScanner();
+        });
     };
 
     const stopScanner = () => {
         if (html5QrCode && html5QrCode.isScanning) {
-            html5QrCode.stop().then(() => showView('dashboard')).catch(err => console.error(err));
+            html5QrCode.stop().then(() => showView('dashboard')).catch(err => {
+                console.error("Failed to stop scanner:", err);
+                showView('dashboard');
+            });
         } else {
             showView('dashboard');
         }
@@ -151,28 +176,29 @@ document.addEventListener('DOMContentLoaded', () => {
         handleBarcode(decodedText);
     };
     
-    const onScanError = (errorMessage) => {
-        // handle scan error, usually ignore.
-    };
-    
     const handleBarcode = (barcode) => {
-        // Check cache first
+        // Basic validation for barcode format
+        if (!/^\d+$/.test(barcode)) {
+            showFeedback('Invalid Barcode', 'Please scan or enter a valid numerical barcode.');
+            return;
+        }
+
         if (state.product_cache[barcode]) {
             processProduct(state.product_cache[barcode]);
             return;
         }
 
-        // Fetch from API
         fetch(`/api/proxy/product/${barcode}`)
             .then(response => {
-                if (!response.ok) throw new Error('Product not found');
+                if (!response.ok) throw new Error('Product not found in database.');
                 return response.json();
             })
             .then(data => {
                 if (data.status === "error" || !data.product) {
-                    throw new Error('Product not in database');
+                    throw new Error('Product data is invalid or missing.');
                 }
-                state.product_cache[barcode] = data.product; // Cache it
+                state.product_cache[barcode] = data.product;
+                db.save();
                 processProduct(data.product);
             })
             .catch(error => {
@@ -191,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
             gamification.addXp(xpGained);
             gamification.updateStreak();
             
-            // Juicy feedback
             appContainer.classList.add('shake-animation');
             setTimeout(() => appContainer.classList.remove('shake-animation'), 500);
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
@@ -199,8 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
             showFeedback('CRITICAL HIT!', `You avoided ${sugarSaved.toFixed(1)}g of sugar! +${xpGained.toFixed(0)} XP`);
 
         } else {
+            const servingSize = parseFloat(product.serving_size?.match(/(\d+)/)?.[0] || 330);
             const sugarAmount = product.nutriments?.sugars_100g || 0;
-            const sugarCubes = Math.floor(sugarAmount * ( (parseFloat(product.serving_size?.match(/(\d+)/)?.[0] || 330)) / 100) / 4);
+            const sugarCubes = Math.floor(sugarAmount * (servingSize / 100) / 4);
             showFeedback('Hazard Detected', `${productName} contains ~${sugarCubes} sugar cubes. Try a sugar-free option!`);
         }
         
@@ -232,16 +258,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initialization ---
     const init = () => {
-        // Register Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/js/sw.js')
                 .then(reg => console.log('Service Worker registered'))
                 .catch(err => console.log('Service Worker not registered', err));
         }
 
-        db.load(); // Load state from storage
+        db.load();
         
-        // Decide initial view
         if (localStorage.getItem('sugarSwapState')) {
             showView('dashboard');
         } else {
