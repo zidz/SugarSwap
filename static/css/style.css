@@ -202,9 +202,9 @@ body {
     transition: transform 0.1s ease;
 }
 
-@media (max-width: 480px) { /* Apply for mobile screens */
+@media (max-width: 400px) { /* Apply for smaller mobile screens */
     .fab {
-        bottom: 15px; /* Adjust for smaller screens */
+        bottom: 5px; /* Adjust for very small screens */
     }
 }
 
