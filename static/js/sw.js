@@ -1,8 +1,16 @@
-const CACHE_NAME = 'sugarswap-cache-v1';
+const CACHE_NAME = 'sugarswap-cache-v2';
 const STATIC_ASSETS = [
     '/',
+    '/manifest.json',
     '/static/css/style.css',
     '/static/js/app.js',
+    '/static/js/sw.js',
+    '/static/icons/icon-192.png',
+    '/static/icons/icon-512.png',
+    '/static/audio/jackpot_win.mp3',
+    '/static/audio/scan_success.mp3',
+    '/static/audio/streak_fire.mp3',
+    '/static/favicon.ico',
     'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
     'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js'
 ];
@@ -32,50 +40,39 @@ self.addEventListener('activate', event => {
     );
 });
 
-// Fetch event: Cache-first for static assets, Network-first for API calls
+// Fetch event: Cache-first for all GET requests, except for API calls
 self.addEventListener('fetch', event => {
-    const isApiCall = event.request.url.includes('/api/');
-    const isStaticAsset = STATIC_ASSETS.some(asset => event.request.url.endsWith(asset));
+    if (event.request.method !== 'GET') {
+        return;
+    }
 
-    if (isApiCall) {
-        // Network-first for API calls
+    // For API calls, use a network-first strategy.
+    if (event.request.url.includes('/api/')) {
         event.respondWith(
-            fetch(event.request)
-                .then(response => {
-                    // Cache the new response
-                    const responseToCache = response.clone();
+            fetch(event.request).catch(() => {
+                return new Response(JSON.stringify({ status: 'offline' }), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            })
+        );
+        return;
+    }
+
+    // For all other GET requests, use a cache-first strategy.
+    event.respondWith(
+        caches.match(event.request)
+            .then(cachedResponse => {
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+                return fetch(event.request).then(networkResponse => {
+                    const responseToCache = networkResponse.clone();
                     caches.open(CACHE_NAME)
                         .then(cache => {
                             cache.put(event.request, responseToCache);
                         });
-                    return response;
-                })
-                .catch(() => {
-                    // If network fails, try to get from cache
-                    return caches.match(event.request);
-                })
-        );
-    } else if (isStaticAsset) {
-        // Cache-first for static assets
-        event.respondWith(
-            caches.match(event.request)
-                .then(response => {
-                    // Cache hit - return response
-                    if (response) {
-                        return response;
-                    }
-                    // Not in cache - fetch and cache
-                    return fetch(event.request).then(
-                        networkResponse => {
-                            const responseToCache = networkResponse.clone();
-                            caches.open(CACHE_NAME)
-                                .then(cache => {
-                                    cache.put(event.request, responseToCache);
-                                });
-                            return networkResponse;
-                        }
-                    );
-                })
-        );
-    }
+                    return networkResponse;
+                });
+            })
+    );
 });
