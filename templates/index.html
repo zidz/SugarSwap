@@ -37,6 +37,16 @@
                 <span id="welcome-message"></span>
                 <button id="logout-btn">Logout</button>
             </div>
+
+            <!-- XP Container moved above stats -->
+            <div id="xp-container">
+                <div id="xp-bar-container">
+                    <div id="xp-bar"></div>
+                    <!-- Text moved inside bar container -->
+                    <p id="xp-text"><span id="xp-stat">0</span> / <span id="xp-to-next-level-stat">3000</span> Level XP</p>
+                </div>
+            </div>
+
             <div id="stats-container">
                 <div class="stat-card">
                     <h2>Level</h2>
@@ -55,12 +65,7 @@
                     <p><span id="streak-stat">0</span> days <span class="fire-emoji">🔥</span></p>
                 </div>
             </div>
-            <div id="xp-container">
-                <div id="xp-bar-container">
-                    <div id="xp-bar"></div>
-                </div>
-                <p><span id="xp-stat">0</span> / <span id="xp-to-next-level-stat">3000</span> Level XP</p>
-            </div>
+
             <!-- FAB moved inside dashboard view -->
             <button id="scan-btn-fab" class="fab">
                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-camera">

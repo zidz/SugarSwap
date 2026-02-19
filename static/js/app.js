@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Buttons
     const logoutBtn = document.getElementById('logout-btn');
     const scanBtn = document.getElementById('scan-btn-fab');
-    const cancelScanBtn = document = document.getElementById('cancel-scan-btn'); // Typo here
-    const feedbackOkBtn = document.getElementById('feedback-ok-btn'); // New OK button
+    const cancelScanBtn = document.getElementById('cancel-scan-btn'); // Corrected typo
+    const feedbackOkBtn = document.getElementById('feedback-ok-btn');
 
     // Inputs
     const usernameInput = document.getElementById('username-input');
@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const xpStat = document.getElementById('xp-stat');
     const xpToNextLevelStat = document.getElementById('xp-to-next-level-stat');
     const xpBar = document.getElementById('xp-bar');
+    const xpText = document.getElementById('xp-text'); // New text element
 
     // --- App State ---
     let state = {};
@@ -155,8 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
         sugarCubesStat.textContent = Math.floor(state.gamification_state.lifetime_stats.total_sugar_saved_g / 4);
         streakStat.textContent = state.gamification_state.streaks.current_streak_days;
         const xpForNextLevel = gamification.xpForLevel(state.gamification_state.level + 1);
-        xpStat.textContent = state.gamification_state.current_xp.toFixed(0);
-        xpToNextLevelStat.textContent = xpForNextLevel;
+        // Update the XP text inside the bar
+        xpText.innerHTML = `<span id="xp-stat">${state.gamification_state.current_xp.toFixed(0)}</span> / <span id="xp-to-next-level-stat">${xpForNextLevel}</span> Level XP`;
         xpBar.style.width = `${(state.gamification_state.current_xp / xpForNextLevel) * 100}%`;
     };
 
@@ -174,11 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackOverlay.querySelector('#feedback-text').textContent = feedback.text;
             feedbackOverlay.classList.add('show');
         } else if (feedbackQueue.length === 0 && isFeedbackShowing) {
-            // No more messages, hide overlay (if it's still showing)
-            // This case should be handled by the OK button clicking and processing the queue.
-            // If the queue is empty, isFeedbackShowing becomes false when OK is clicked.
-            // And the next call to processFeedbackQueue will do nothing here.
-            // So, no explicit hide needed here.
         }
     };
 
