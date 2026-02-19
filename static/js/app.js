@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const gamification = {
         xpForLevel: (level) => 3000, // All levels require 3000 XP now
         addXp: (xp) => {
+            console.log(`addXp called. Current XP: ${state.gamification_state.current_xp}, XP to add: ${xp}`); // DEBUG
             state.gamification_state.current_xp += xp;
             const xpForNextLevel = gamification.xpForLevel(state.gamification_state.level + 1);
             if (state.gamification_state.current_xp >= xpForNextLevel) {
@@ -119,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.gamification_state.current_xp -= xpForNextLevel; // Reset current XP for next level
                 playSound('jackpot_win.mp3'); 
                 showFeedback('LEVEL UP!', `You are now Level ${state.gamification_state.level}!`);
+                console.log(`Level up! New level: ${state.gamification_state.level}, new XP: ${state.gamification_state.current_xp}`); // DEBUG
             }
         },
         calculateSugarSaving: (product) => {
@@ -158,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showFeedback = (title, text) => {
+        console.log(`Displaying Feedback: Title="${title}", Text="${text}"`); // DEBUG
         feedbackOverlay.querySelector('#feedback-title').textContent = title;
         feedbackOverlay.querySelector('#feedback-text').textContent = text;
         feedbackOverlay.classList.add('show');
@@ -165,7 +168,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const playSound = (soundFile) => {
-        new Audio(`/static/audio/${soundFile}`).play().catch(e => console.log("Audio play failed:", e));
+        console.log(`Attempting to play sound: ${soundFile}`); // DEBUG
+        new Audio(`/static/audio/${soundFile}`).play()
+            .then(() => console.log(`Sound played: ${soundFile}`)) // DEBUG
+            .catch(e => console.error(`Audio play failed for ${soundFile}:`, e)); // DEBUG
     };
 
     // --- Scanner Logic (unchanged) ---
