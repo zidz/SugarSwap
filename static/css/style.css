@@ -185,7 +185,7 @@ body {
 
 .fab {
     position: absolute;
-    bottom: 15px; /* Reduced from 30px */
+    bottom: 30px; /* Default for larger screens */
     left: 50%;
     transform: translateX(-50%);
     width: 80px;
@@ -201,6 +201,13 @@ body {
     align-items: center;
     transition: transform 0.1s ease;
 }
+
+@media (max-width: 480px) { /* Apply for mobile screens */
+    .fab {
+        bottom: 15px; /* Adjust for smaller screens */
+    }
+}
+
 
 .fab svg {
     color: var(--background-color);
