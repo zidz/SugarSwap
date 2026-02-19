@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new Audio(`/static/audio/${soundFile}`).play().catch(e => console.error(`Audio play failed for ${soundFile}:`, e));
     };
 
-    const logWater = () => {
+    const processWaterLog = () => {
         const sugarSaved = (330 / 100) * NEMESIS_SUGAR_PER_100ML; // Equivalent to 33cl sugar-free drink
         const xpGained = sugarSaved;
 
@@ -254,6 +254,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         updateUI();
         debouncedSave();
+    };
+
+    const logWater = () => {
+        showFeedback(
+            'Confirm Water Intake',
+            'Log 33cl of water? This will grant you XP and contribute to your streak!',
+            'confirm',
+            processWaterLog // Callback for confirmation
+        );
     };
 
     // --- Scanner Logic ---
