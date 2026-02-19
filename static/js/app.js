@@ -108,14 +108,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // --- Gamification & UI (mostly unchanged) ---
+    // --- Gamification & UI ---
     const gamification = {
-        xpForLevel: (level) => Math.pow(level, 2) * 100,
+        xpForLevel: (level) => 3000, // All levels require 3000 XP now
         addXp: (xp) => {
             state.gamification_state.current_xp += xp;
             const xpForNextLevel = gamification.xpForLevel(state.gamification_state.level + 1);
             if (state.gamification_state.current_xp >= xpForNextLevel) {
                 state.gamification_state.level++;
+                state.gamification_state.current_xp -= xpForNextLevel; // Reset current XP for next level
                 playSound('jackpot_win.mp3'); 
                 showFeedback('LEVEL UP!', `You are now Level ${state.gamification_state.level}!`);
             }
