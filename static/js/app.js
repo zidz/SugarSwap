@@ -169,10 +169,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!state.gamification_state) return;
         levelBadge.textContent = state.gamification_state.level;
         sugarSavedStat.textContent = state.gamification_state.lifetime_stats.total_sugar_saved_g.toFixed(1);
-        sugarCubesStat.textContent = Math.floor(state.gamification_state.lifetime_stats.total_sugar_saved_g / 4);
+        sugarCubesStat.textContent = Math.floor(state.gamification_state.lifetime_stats.total_sugar_saved_g / 3);
         streakStat.textContent = state.gamification_state.streaks.current_streak_days;
         sugarConsumedStat.textContent = state.gamification_state.lifetime_stats.total_sugar_consumed_g.toFixed(1);
-        sugarCubesConsumedStat.textContent = Math.floor(state.gamification_state.lifetime_stats.total_sugar_consumed_g / 4);
+        sugarCubesConsumedStat.textContent = Math.floor(state.gamification_state.lifetime_stats.total_sugar_consumed_g / 3);
 
         if (state.gamification_state.streaks.current_streak_days >= 2) {
             fireEmoji.style.display = 'inline';
