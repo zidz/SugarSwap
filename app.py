@@ -4,6 +4,11 @@ import logging
 from logging.handlers import RotatingFileHandler
 from flask import Flask, jsonify, render_template, request, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
+import requests # Import requests
+import requests.packages.urllib3 # Import for disabling warnings
+
+# Disable SSL warnings for unverified requests (development only)
+requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 # --- App Initialization ---
 app = Flask(__name__)
@@ -151,7 +156,7 @@ def save_user_data():
 def product_proxy(barcode):
     api_url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
     try:
-        response = requests.get(api_url)
+        response = requests.get(api_url, verify=False) # <--- ADDED verify=False
         response.raise_for_status()
         data = response.json()
         if data.get("status") == 0 or "product" not in data:
@@ -166,11 +171,6 @@ def product_proxy(barcode):
 @app.route("/")
 def index():
     return render_template("index.html")
-
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route("/manifest.json")
 def serve_manifest():
