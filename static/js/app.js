@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sugarCubesStat = document.getElementById('sugar-cubes-stat');
     const streakStat = document.getElementById('streak-stat');
     const sugarConsumedStat = document.getElementById('sugar-consumed-stat');
+    const sugarCubesConsumedStat = document.getElementById('sugar-cubes-consumed-stat');
     const xpStat = document.getElementById('xp-stat');
     const xpToNextLevelStat = document.getElementById('xp-to-next-level-stat');
     const xpBar = document.getElementById('xp-bar');
@@ -170,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sugarCubesStat.textContent = Math.floor(state.gamification_state.lifetime_stats.total_sugar_saved_g / 4);
         streakStat.textContent = state.gamification_state.streaks.current_streak_days;
         sugarConsumedStat.textContent = state.gamification_state.lifetime_stats.total_sugar_consumed_g.toFixed(1);
+        sugarCubesConsumedStat.textContent = Math.floor(state.gamification_state.lifetime_stats.total_sugar_consumed_g / 4);
         
         const xpForNextLevel = gamification.xpForLevel(state.gamification_state.level + 1);
         xpText.innerHTML = `<span id="xp-stat">${state.gamification_state.current_xp.toFixed(0)}</span> / <span id="xp-to-next-level-stat">${xpForNextLevel}</span> Level XP`;
