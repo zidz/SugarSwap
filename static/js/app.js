@@ -8,12 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const showRegisterLink = document.getElementById('show-register-link');
-    const showLoginLink = document.getElementById('show-login-link'); // Corrected typo here
+    const showLoginLink = document.getElementById('show-login-link');
     
     // Buttons
     const logoutBtn = document.getElementById('logout-btn');
     const scanBtn = document.getElementById('scan-btn-fab');
-    const cancelScanBtn = document.getElementById('cancel-scan-btn');
+    const cancelScanBtn = document = document.getElementById('cancel-scan-btn'); // Typo here
     const feedbackOkBtn = document.getElementById('feedback-ok-btn'); // New OK button
 
     // Inputs
@@ -32,11 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Stats
     const levelBadge = document.getElementById('level-badge');
     const sugarSavedStat = document.getElementById('sugar-saved-stat');
-    const sugarCubesStat = document.getElementById('sugar-cubes-stat'); // Corrected typo here
+    const sugarCubesStat = document.getElementById('sugar-cubes-stat');
     const streakStat = document.getElementById('streak-stat');
     const xpStat = document.getElementById('xp-stat');
     const xpToNextLevelStat = document.getElementById('xp-to-next-level-stat');
-    const xpBar = document.getElementById('xp-bar'); // Corrected typo here
+    const xpBar = document.getElementById('xp-bar');
 
     // --- App State ---
     let state = {};
@@ -175,8 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackOverlay.classList.add('show');
         } else if (feedbackQueue.length === 0 && isFeedbackShowing) {
             // No more messages, hide overlay (if it's still showing)
-            feedbackOverlay.classList.remove('show');
-            isFeedbackShowing = false;
+            // This case should be handled by the OK button clicking and processing the queue.
+            // If the queue is empty, isFeedbackShowing becomes false when OK is clicked.
+            // And the next call to processFeedbackQueue will do nothing here.
+            // So, no explicit hide needed here.
         }
     };
 
@@ -340,7 +342,11 @@ document.addEventListener('DOMContentLoaded', () => {
     feedbackOkBtn.addEventListener('click', () => { // Event listener for new OK button
         feedbackOverlay.classList.remove('show');
         isFeedbackShowing = false;
-        processFeedbackQueue(); // Show next message in queue
+        // Wait for the transition out to complete before processing the next message
+        // This ensures the current overlay transitions out before the next one potentially transitions in
+        setTimeout(() => {
+            processFeedbackQueue();
+        }, 500); // 500ms matches the CSS transition duration
     });
 
     // --- Initialization ---
