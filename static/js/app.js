@@ -108,6 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!state.gamification_state.lifetime_stats.total_sugar_consumed_g) {
                 state.gamification_state.lifetime_stats.total_sugar_consumed_g = 0;
             }
+            if (!state.gamification_state.lifetime_stats.daily_sugar_consumed_g) {
+                state.gamification_state.lifetime_stats.daily_sugar_consumed_g = 0;
+            }
+            if (!state.gamification_state.lifetime_stats.last_consumed_date) {
+                state.gamification_state.lifetime_stats.last_consumed_date = new Date().toISOString().split('T')[0];
+            }
             updateUI();
             showView('dashboard');
         }).catch(err => {
@@ -159,8 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
                 if (lastLog === yesterday) {
                     state.gamification_state.streaks.current_streak_days++;
-                } else if (lastLog !== null) {
-                    state.gamification_state.streaks.current_streak_days = Math.floor(state.gamification_state.streaks.current_streak_days * 0.8);
+                } else if (lastLog === null) {
+                    state.gamification_state.streaks.current_streak_days = 1;
+                } else {
+                    state.gamification_state.streaks.current_streak_days = 0;
                 }
                 state.gamification_state.streaks.last_log_date = today;
             }
@@ -177,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sugarCubesConsumedStat.textContent = Math.floor(state.gamification_state.lifetime_stats.total_sugar_consumed_g / 3);
         
         // Calculate and display daily percentage
-        const dailyPercentage = (state.gamification_state.lifetime_stats.total_sugar_consumed_g / DAILY_RECOMMENDED_SUGAR_G) * 100;
+        const dailyPercentage = (state.gamification_state.lifetime_stats.daily_sugar_consumed_g / DAILY_RECOMMENDED_SUGAR_G) * 100;
         dailySugarPercentStat.textContent = dailyPercentage.toFixed(0);
 
         if (state.gamification_state.streaks.current_streak_days >= 2) {
@@ -325,7 +333,11 @@ document.addEventListener('DOMContentLoaded', () => {
              if (!state.gamification_state.lifetime_stats.total_sugar_consumed_g) {
                 state.gamification_state.lifetime_stats.total_sugar_consumed_g = 0;
             }
+            if (!state.gamification_state.lifetime_stats.daily_sugar_consumed_g) {
+                state.gamification_state.lifetime_stats.daily_sugar_consumed_g = 0;
+            }
             state.gamification_state.lifetime_stats.total_sugar_consumed_g += sugarIntake;
+            state.gamification_state.lifetime_stats.daily_sugar_consumed_g += sugarIntake;
             showFeedback('Hazard Detected', `You consumed ~${sugarIntake.toFixed(1)}g of sugar.`, 'ok');
         }
         

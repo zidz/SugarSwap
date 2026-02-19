@@ -2,6 +2,7 @@ import json
 import os
 import logging
 from logging.handlers import RotatingFileHandler
+from datetime import date # Import date
 from flask import Flask, jsonify, render_template, request, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests # Import requests
@@ -76,7 +77,9 @@ def register():
             "current_xp": 0,
             "lifetime_stats": {
                 "total_sugar_saved_g": 0,
-                "total_sugar_consumed_g": 0 # New field
+                "total_sugar_consumed_g": 0,
+                "daily_sugar_consumed_g": 0, # New field for daily tracking
+                "last_consumed_date": None # New field to track last consumption date
             },
             "streaks": {"current_streak_days": 0, "last_log_date": None}
         },
@@ -131,6 +134,16 @@ def get_user_data():
     if not user_data:
          return jsonify({"status": "error", "message": "User not found"}), 404
          
+    # Check and reset daily sugar if the date has changed
+    today_str = date.today().isoformat()
+    last_consumed_date = user_data.get('gamification_state', {}).get('lifetime_stats', {}).get('last_consumed_date')
+    
+    if last_consumed_date != today_str:
+        user_data['gamification_state']['lifetime_stats']['daily_sugar_consumed_g'] = 0
+        user_data['gamification_state']['lifetime_stats']['last_consumed_date'] = today_str
+        # No need to save here, as this is a read operation and we don't want to save on every GET
+        # The data will be saved when the user performs an action (POST)
+
     return jsonify({
         "gamification_state": user_data.get('gamification_state'),
         "product_cache": user_data.get('product_cache')
