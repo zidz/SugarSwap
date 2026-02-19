@@ -77,6 +77,7 @@ body {
     width: calc(100% - 24px); /* Full width minus padding */
     max-width: 350px; /* Limit max width */
     margin: 0 auto; /* Center the inputs */
+    margin-bottom: 5px;
 }
 #login-view button {
     padding: 12px;
@@ -134,7 +135,7 @@ body {
 #stats-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 5px;
     margin-bottom: 20px;
 }
 
@@ -154,7 +155,7 @@ body {
 
 .stat-card p {
     margin: 0;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: bold;
 }
 
@@ -185,7 +186,6 @@ body {
 
 .fab {
     position: absolute;
-    bottom: 30px; /* Default for larger screens */
     left: 50%;
     transform: translateX(-50%);
     width: 80px;
@@ -200,12 +200,6 @@ body {
     justify-content: center;
     align-items: center;
     transition: transform 0.1s ease;
-}
-
-@media (max-width: 480px) { /* Apply for mobile screens */
-    .fab {
-        bottom: 5px; /* Adjust for mobile screens */
-    }
 }
 
 
@@ -274,7 +268,7 @@ body {
 /* Feedback Overlay */
 #feedback-overlay {
     position: absolute;
-    top: -150px;
+    top: -200px;
     left: 10%;
     width: 80%;
     background-color: var(--dark-gray);
