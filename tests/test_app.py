@@ -102,3 +102,4 @@ def test_get_and_save_user_data(client):
     with open(USERS_FILE, 'r') as f:
         users = json.load(f)
         assert users['users']['testuser']['gamification_state']['level'] == 5
+
