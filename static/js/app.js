@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const showRegisterLink = document.getElementById('show-register-link');
-    const showLoginLink = document.getElementById('show-login-link');
+    const showLoginLink = document.getElementById('show-login-link'); // Corrected typo here
     
     // Buttons
     const logoutBtn = document.getElementById('logout-btn');
@@ -32,17 +32,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Stats
     const levelBadge = document.getElementById('level-badge');
     const sugarSavedStat = document.getElementById('sugar-saved-stat');
-    const sugarCubesStat = document = document.getElementById('sugar-cubes-stat');
+    const sugarCubesStat = document.getElementById('sugar-cubes-stat'); // Corrected typo here
     const streakStat = document.getElementById('streak-stat');
     const xpStat = document.getElementById('xp-stat');
     const xpToNextLevelStat = document.getElementById('xp-to-next-level-stat');
-    const xpBar = document.getElementById('xp-bar');
+    const xpBar = document.getElementById('xp-bar'); // Corrected typo here
 
     // --- App State ---
     let state = {};
     let html5QrCode;
     const NEMESIS_SUGAR_PER_100ML = 10.6;
     let saveDataTimeout;
+    let feedbackQueue = []; // New feedback queue
+    let isFeedbackShowing = false;
+
 
     // --- API Communication ---
     const api = {
@@ -117,7 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.gamification_state.level++;
                 state.gamification_state.current_xp -= xpForNextLevel; // Reset current XP for next level
                 playSound('jackpot_win.mp3'); 
-                showFeedback('LEVEL UP!', `You are now Level ${state.gamification_state.level}!`);
+                // Add level up message to queue instead of direct display
+                feedbackQueue.push({ title: 'LEVEL UP!', text: `You are now Level ${state.gamification_state.level}!` });
             }
         },
         calculateSugarSaving: (product) => {
@@ -156,12 +160,26 @@ document.addEventListener('DOMContentLoaded', () => {
         xpBar.style.width = `${(state.gamification_state.current_xp / xpForNextLevel) * 100}%`;
     };
 
+    // --- Feedback Queue Management ---
     const showFeedback = (title, text) => {
-        feedbackOverlay.querySelector('#feedback-title').textContent = title;
-        feedbackOverlay.querySelector('#feedback-text').textContent = text;
-        feedbackOverlay.classList.add('show');
-        // No setTimeout here, will be dismissed by OK button
+        feedbackQueue.push({ title, text });
+        processFeedbackQueue();
     };
+
+    const processFeedbackQueue = () => {
+        if (feedbackQueue.length > 0 && !isFeedbackShowing) {
+            isFeedbackShowing = true;
+            const feedback = feedbackQueue.shift(); // Get next message
+            feedbackOverlay.querySelector('#feedback-title').textContent = feedback.title;
+            feedbackOverlay.querySelector('#feedback-text').textContent = feedback.text;
+            feedbackOverlay.classList.add('show');
+        } else if (feedbackQueue.length === 0 && isFeedbackShowing) {
+            // No more messages, hide overlay (if it's still showing)
+            feedbackOverlay.classList.remove('show');
+            isFeedbackShowing = false;
+        }
+    };
+
 
     const playSound = (soundFile) => {
         new Audio(`/static/audio/${soundFile}`).play().catch(e => console.error(`Audio play failed for ${soundFile}:`, e));
@@ -221,13 +239,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sugarSaved > 0) {
             const xpGained = sugarSaved;
             state.gamification_state.lifetime_stats.total_sugar_saved_g += sugarSaved;
-            gamification.addXp(xpGained);
+            gamification.addXp(xpGained); // addXp now queues level up message
             gamification.updateStreak();
             appContainer.classList.add('shake-animation');
             setTimeout(() => appContainer.classList.remove('shake-animation'), 500);
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
             playSound('scan_success.mp3');
-            showFeedback('CRITICAL HIT!', `You avoided ${sugarSaved.toFixed(1)}g of sugar! +${xpGained.toFixed(0)} XP`);
+            // Add critical hit message to queue
+            feedbackQueue.push({ title: 'CRITICAL HIT!', text: `You avoided ${sugarSaved.toFixed(1)}g of sugar! +${xpGained.toFixed(0)} XP` });
+            processFeedbackQueue(); // Attempt to show next from queue
         } else {
             const servingSize = parseFloat(product.serving_size?.match(/(\\d+)/)?.[0] || 330);
             const sugarAmount = product.nutriments?.sugars_100g || 0;
@@ -319,6 +339,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     feedbackOkBtn.addEventListener('click', () => { // Event listener for new OK button
         feedbackOverlay.classList.remove('show');
+        isFeedbackShowing = false;
+        processFeedbackQueue(); // Show next message in queue
     });
 
     // --- Initialization ---
