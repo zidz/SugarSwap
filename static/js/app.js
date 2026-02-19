@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     const scanBtn = document.getElementById('scan-btn-fab');
     const cancelScanBtn = document.getElementById('cancel-scan-btn');
+    const feedbackOkBtn = document.getElementById('feedback-ok-btn'); // New OK button
 
     // Inputs
     const usernameInput = document.getElementById('username-input');
@@ -31,11 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Stats
     const levelBadge = document.getElementById('level-badge');
     const sugarSavedStat = document.getElementById('sugar-saved-stat');
-    const sugarCubesStat = document.getElementById('sugar-cubes-stat');
+    const sugarCubesStat = document = document.getElementById('sugar-cubes-stat');
     const streakStat = document.getElementById('streak-stat');
     const xpStat = document.getElementById('xp-stat');
     const xpToNextLevelStat = document.getElementById('xp-to-next-level-stat');
-    const xpBar = document = document.getElementById('xp-bar'); // Typo here, should be document.getElementById('xp-bar')
+    const xpBar = document.getElementById('xp-bar');
 
     // --- App State ---
     let state = {};
@@ -159,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         feedbackOverlay.querySelector('#feedback-title').textContent = title;
         feedbackOverlay.querySelector('#feedback-text').textContent = text;
         feedbackOverlay.classList.add('show');
-        setTimeout(() => feedbackOverlay.classList.remove('show'), 4000);
+        // No setTimeout here, will be dismissed by OK button
     };
 
     const playSound = (soundFile) => {
@@ -314,6 +315,10 @@ document.addEventListener('DOMContentLoaded', () => {
            stopScanner();
            handleBarcode(barcode);
        }
+    });
+
+    feedbackOkBtn.addEventListener('click', () => { // Event listener for new OK button
+        feedbackOverlay.classList.remove('show');
     });
 
     // --- Initialization ---

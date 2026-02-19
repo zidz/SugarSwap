@@ -295,6 +295,17 @@ body {
     color: var(--primary-color);
     margin: 0 0 10px;
 }
+#feedback-ok-btn {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    font-size: 1rem;
+}
+
 
 /* Animations */
 @keyframes shake {
