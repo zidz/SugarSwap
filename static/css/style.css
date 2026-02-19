@@ -204,7 +204,7 @@ body {
 
 @media (max-width: 400px) { /* Apply for smaller mobile screens */
     .fab {
-        bottom: 0px; /* Adjust for very small screens */
+        bottom: -20px; /* Adjust with negative value for very small screens */
     }
 }
 
