@@ -77,6 +77,7 @@ body {
     width: calc(100% - 24px); /* Full width minus padding */
     max-width: 350px; /* Limit max width */
     margin: 0 auto; /* Center the inputs */
+    margin-bottom: 5px;
 }
 #login-view button {
     padding: 12px;
@@ -108,7 +109,7 @@ body {
     min-height: 20px;
 }
 .danger-text {
-    color: var(--danger-red);
+    color: var(--danger-red) !important;
 }
 
 
@@ -284,7 +285,7 @@ body {
 /* Feedback Overlay */
 #feedback-overlay {
     position: absolute;
-    top: -150px;
+    top: -200px;
     left: 10%;
     width: 80%;
     background-color: var(--dark-gray);
