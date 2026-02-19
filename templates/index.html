@@ -42,7 +42,6 @@
             <div id="xp-container">
                 <div id="xp-bar-container">
                     <div id="xp-bar"></div>
-                    <!-- Text moved inside bar container -->
                     <p id="xp-text"><span id="xp-stat">0</span> / <span id="xp-to-next-level-stat">3000</span> Level XP</p>
                 </div>
             </div>
@@ -70,13 +69,18 @@
                 </div>
             </div>
 
-            <!-- FAB moved inside dashboard view -->
-            <button id="scan-btn-fab" class="fab">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-camera">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                    <circle cx="12" cy="13" r="4"></circle>
-                </svg>
-            </button>
+            <!-- Action Buttons Container -->
+            <div class="action-buttons-container">
+                <button id="scan-btn-fab" class="fab">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-camera">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                </button>
+                <button id="add-water-btn" class="fab water-btn">
+                    💧
+                </button>
+            </div>
         </div>
 
         <!-- Scanner View -->
@@ -92,7 +96,7 @@
             </div>
         </div>
 
-        <!-- Feedback Overlay -->
+        <!-- Feedback & Confirmation Overlay -->
         <div id="feedback-overlay">
             <h2 id="feedback-title"></h2>
             <p id="feedback-text"></p>

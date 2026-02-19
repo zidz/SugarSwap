@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Buttons
     const logoutBtn = document.getElementById('logout-btn');
     const scanBtn = document.getElementById('scan-btn-fab');
+    const addWaterBtn = document.getElementById('add-water-btn');
     const cancelScanBtn = document.getElementById('cancel-scan-btn');
     const feedbackOkBtn = document.getElementById('feedback-ok-btn');
     const feedbackConfirmBtn = document.getElementById('feedback-confirm-btn');
@@ -217,6 +218,21 @@ document.addEventListener('DOMContentLoaded', () => {
         new Audio(`/static/audio/${soundFile}`).play().catch(e => console.error(`Audio play failed for ${soundFile}:`, e));
     };
 
+    const logWater = () => {
+        const sugarSaved = (330 / 100) * NEMESIS_SUGAR_PER_100ML; // Equivalent to 33cl sugar-free drink
+        const xpGained = sugarSaved;
+
+        state.gamification_state.lifetime_stats.total_sugar_saved_g += sugarSaved;
+        gamification.addXp(xpGained);
+        gamification.updateStreak();
+        
+        showFeedback('Healthy Choice!', `You logged 33cl of water. +${xpGained.toFixed(0)} XP`, 'ok');
+        playSound('scan_success.mp3');
+        
+        updateUI();
+        debouncedSave();
+    };
+
     // --- Scanner Logic ---
     const startScanner = () => {
         showView('scanner');
@@ -358,6 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     scanBtn.addEventListener('click', startScanner);
+    addWaterBtn.addEventListener('click', logWater);
     cancelScanBtn.addEventListener('click', stopScanner);
     document.getElementById('manual-submit-btn').addEventListener('click', () => {
        const barcode = document.getElementById('manual-barcode-input').value;
