@@ -107,6 +107,9 @@ body {
     color: var(--danger-red);
     min-height: 20px;
 }
+.danger-text {
+    color: var(--danger-red);
+}
 
 
 /* Dashboard */
@@ -302,15 +305,27 @@ body {
     color: var(--primary-color);
     margin: 0 0 10px;
 }
-#feedback-ok-btn {
-    background-color: var(--primary-color);
-    color: var(--background-color);
+.feedback-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+#feedback-ok-btn, #feedback-confirm-btn, #feedback-cancel-btn {
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: 15px;
     font-size: 1rem;
+}
+#feedback-ok-btn, #feedback-confirm-btn {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+}
+#feedback-cancel-btn {
+    background-color: var(--danger-red);
+    color: white;
 }
 
 

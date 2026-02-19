@@ -74,7 +74,10 @@ def register():
         "gamification_state": {
             "level": 1,
             "current_xp": 0,
-            "lifetime_stats": {"total_sugar_saved_g": 0},
+            "lifetime_stats": {
+                "total_sugar_saved_g": 0,
+                "total_sugar_consumed_g": 0 # New field
+            },
             "streaks": {"current_streak_days": 0, "last_log_date": None}
         },
         "product_cache": {}

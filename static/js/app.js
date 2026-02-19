@@ -13,8 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Buttons
     const logoutBtn = document.getElementById('logout-btn');
     const scanBtn = document.getElementById('scan-btn-fab');
-    const cancelScanBtn = document.getElementById('cancel-scan-btn'); // Corrected typo
+    const cancelScanBtn = document.getElementById('cancel-scan-btn');
     const feedbackOkBtn = document.getElementById('feedback-ok-btn');
+    const feedbackConfirmBtn = document.getElementById('feedback-confirm-btn');
+    const feedbackCancelBtn = document.getElementById('feedback-cancel-btn');
+
 
     // Inputs
     const usernameInput = document.getElementById('username-input');
@@ -34,18 +37,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const sugarSavedStat = document.getElementById('sugar-saved-stat');
     const sugarCubesStat = document.getElementById('sugar-cubes-stat');
     const streakStat = document.getElementById('streak-stat');
+    const sugarConsumedStat = document.getElementById('sugar-consumed-stat');
     const xpStat = document.getElementById('xp-stat');
     const xpToNextLevelStat = document.getElementById('xp-to-next-level-stat');
     const xpBar = document.getElementById('xp-bar');
-    const xpText = document.getElementById('xp-text'); // New text element
+    const xpText = document.getElementById('xp-text');
 
     // --- App State ---
     let state = {};
     let html5QrCode;
     const NEMESIS_SUGAR_PER_100ML = 10.6;
     let saveDataTimeout;
-    let feedbackQueue = []; // New feedback queue
+    let feedbackQueue = [];
     let isFeedbackShowing = false;
+    let confirmationCallback = null;
 
 
     // --- API Communication ---
@@ -94,6 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
         api.getData().then(data => {
             state.gamification_state = data.gamification_state;
             state.product_cache = data.product_cache || {};
+            // Ensure new stats field exists for older users
+            if (!state.gamification_state.lifetime_stats.total_sugar_consumed_g) {
+                state.gamification_state.lifetime_stats.total_sugar_consumed_g = 0;
+            }
             updateUI();
             showView('dashboard');
         }).catch(err => {
@@ -113,16 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Gamification & UI ---
     const gamification = {
-        xpForLevel: (level) => 3000, // All levels require 3000 XP now
+        xpForLevel: (level) => 3000,
         addXp: (xp) => {
             state.gamification_state.current_xp += xp;
             const xpForNextLevel = gamification.xpForLevel(state.gamification_state.level + 1);
             if (state.gamification_state.current_xp >= xpForNextLevel) {
                 state.gamification_state.level++;
-                state.gamification_state.current_xp -= xpForNextLevel; // Reset current XP for next level
+                state.gamification_state.current_xp -= xpForNextLevel;
                 playSound('jackpot_win.mp3'); 
-                // Add level up message to queue instead of direct display
-                feedbackQueue.push({ title: 'LEVEL UP!', text: `You are now Level ${state.gamification_state.level}!` });
+                feedbackQueue.push({ title: 'LEVEL UP!', text: `You are now Level ${state.gamification_state.level}!`, type: 'ok' });
             }
         },
         calculateSugarSaving: (product) => {
@@ -132,6 +140,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return (servingSizeMl / 100) * NEMESIS_SUGAR_PER_100ML;
             }
             return 0;
+        },
+        calculateSugarIntake: (product) => {
+            const servingSizeMl = parseFloat(product.serving_size?.match(/(\\d+)/)?.[0] || 330);
+            const sugarPer100g = product.nutriments?.sugars_100g || 0;
+            return (servingSizeMl / 100) * sugarPer100g;
         },
         updateStreak: () => {
             const today = new Date().toISOString().split('T')[0];
@@ -155,35 +168,56 @@ document.addEventListener('DOMContentLoaded', () => {
         sugarSavedStat.textContent = state.gamification_state.lifetime_stats.total_sugar_saved_g.toFixed(1);
         sugarCubesStat.textContent = Math.floor(state.gamification_state.lifetime_stats.total_sugar_saved_g / 4);
         streakStat.textContent = state.gamification_state.streaks.current_streak_days;
+        sugarConsumedStat.textContent = state.gamification_state.lifetime_stats.total_sugar_consumed_g.toFixed(1);
+        
         const xpForNextLevel = gamification.xpForLevel(state.gamification_state.level + 1);
-        // Update the XP text inside the bar
         xpText.innerHTML = `<span id="xp-stat">${state.gamification_state.current_xp.toFixed(0)}</span> / <span id="xp-to-next-level-stat">${xpForNextLevel}</span> Level XP`;
         xpBar.style.width = `${(state.gamification_state.current_xp / xpForNextLevel) * 100}%`;
     };
 
     // --- Feedback Queue Management ---
-    const showFeedback = (title, text) => {
-        feedbackQueue.push({ title, text });
+    const showFeedback = (title, text, type = 'ok', onConfirm = null) => {
+        feedbackQueue.push({ title, text, type, onConfirm });
         processFeedbackQueue();
     };
 
     const processFeedbackQueue = () => {
         if (feedbackQueue.length > 0 && !isFeedbackShowing) {
             isFeedbackShowing = true;
-            const feedback = feedbackQueue.shift(); // Get next message
+            const feedback = feedbackQueue.shift();
+            
             feedbackOverlay.querySelector('#feedback-title').textContent = feedback.title;
             feedbackOverlay.querySelector('#feedback-text').textContent = feedback.text;
+
+            feedbackOkBtn.style.display = 'none';
+            feedbackConfirmBtn.style.display = 'none';
+            feedbackCancelBtn.style.display = 'none';
+
+            if (feedback.type === 'ok') {
+                feedbackOkBtn.style.display = 'block';
+                confirmationCallback = null;
+            } else if (feedback.type === 'confirm') {
+                feedbackConfirmBtn.style.display = 'inline-block';
+                feedbackCancelBtn.style.display = 'inline-block';
+                confirmationCallback = feedback.onConfirm;
+            }
+
             feedbackOverlay.classList.add('show');
-        } else if (feedbackQueue.length === 0 && isFeedbackShowing) {
         }
     };
 
+    const hideFeedback = () => {
+        feedbackOverlay.classList.remove('show');
+        isFeedbackShowing = false;
+        confirmationCallback = null; // Clear callback
+        setTimeout(processFeedbackQueue, 500); // Check for next after transition
+    };
 
     const playSound = (soundFile) => {
         new Audio(`/static/audio/${soundFile}`).play().catch(e => console.error(`Audio play failed for ${soundFile}:`, e));
     };
 
-    // --- Scanner Logic (unchanged) ---
+    // --- Scanner Logic ---
     const startScanner = () => {
         showView('scanner');
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -192,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         html5QrCode = new Html5Qrcode("qr-reader");
         const config = { fps: 10, qrbox: { width: 250, height: 150 }, supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA] };
-        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, (errorMessage) => console.log(`QR Scan Error: ${errorMessage}`))
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, (errorMessage) => {})
             .catch((err) => {
                 alert(`Error starting camera: ${err}. Please grant camera permissions.`);
                 stopScanner();
@@ -217,8 +251,21 @@ document.addEventListener('DOMContentLoaded', () => {
             showFeedback('Invalid Barcode', 'Please scan or enter a valid numerical barcode.');
             return;
         }
+        
+        const process = (product) => {
+            // This is now called after confirmation
+            processProduct(product);
+        };
+        
+        const showConfirmation = (product) => {
+            const sugarIntake = gamification.calculateSugarIntake(product);
+            const title = 'Confirm Scan';
+            const text = `Add '${product.product_name || 'this product'}'? It contains ~${sugarIntake.toFixed(1)}g of sugar.`;
+            showFeedback(title, text, 'confirm', () => process(product));
+        };
+
         if (state.product_cache && state.product_cache[barcode]) {
-            processProduct(state.product_cache[barcode]);
+            showConfirmation(state.product_cache[barcode]);
             return;
         }
         fetch(`/api/proxy/product/${barcode}`)
@@ -227,33 +274,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.status === "error" || !data.product) return Promise.reject('Product data is invalid.');
                 if (!state.product_cache) state.product_cache = {};
                 state.product_cache[barcode] = data.product;
-                processProduct(data.product);
+                showConfirmation(data.product);
             })
-            .catch(error => showFeedback('Error', error.toString()));
+            .catch(error => showFeedback('Error', error.toString(), 'ok'));
     };
 
     const processProduct = (product) => {
         const sugarSaved = gamification.calculateSugarSaving(product);
-        if (sugarSaved > 0) {
+        const sugarIntake = gamification.calculateSugarIntake(product);
+        
+        if (sugarSaved > 0) { // Sugar-free choice
             const xpGained = sugarSaved;
             state.gamification_state.lifetime_stats.total_sugar_saved_g += sugarSaved;
-            gamification.addXp(xpGained); // addXp now queues level up message
-            gamification.updateStreak();
-            appContainer.classList.add('shake-animation');
-            setTimeout(() => appContainer.classList.remove('shake-animation'), 500);
-            confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+            gamification.addXp(xpGained);
+            showFeedback('CRITICAL HIT!', `You avoided ${sugarSaved.toFixed(1)}g of sugar! +${xpGained.toFixed(0)} XP`, 'ok');
             playSound('scan_success.mp3');
-            // Add critical hit message to queue
-            feedbackQueue.push({ title: 'CRITICAL HIT!', text: `You avoided ${sugarSaved.toFixed(1)}g of sugar! +${xpGained.toFixed(0)} XP` });
-            processFeedbackQueue(); // Attempt to show next from queue
-        } else {
-            const servingSize = parseFloat(product.serving_size?.match(/(\\d+)/)?.[0] || 330);
-            const sugarAmount = product.nutriments?.sugars_100g || 0;
-            const sugarCubes = Math.floor(sugarAmount * (servingSize / 100) / 4);
-            showFeedback('Hazard Detected', `${product.product_name || 'Product'} contains ~${sugarCubes} sugar cubes.`);
+            confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+        } else { // Sugary choice
+             if (!state.gamification_state.lifetime_stats.total_sugar_consumed_g) {
+                state.gamification_state.lifetime_stats.total_sugar_consumed_g = 0;
+            }
+            state.gamification_state.lifetime_stats.total_sugar_consumed_g += sugarIntake;
+            showFeedback('Hazard Detected', `You consumed ~${sugarIntake.toFixed(1)}g of sugar.`, 'ok');
         }
+        
+        gamification.updateStreak();
         updateUI();
-        debouncedSave(); // Save data after processing
+        debouncedSave();
     };
 
 
@@ -274,10 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const username = usernameInput.value;
         const password = passwordInput.value;
-        if (!username || !password) {
-            showLoginView('Username and password are required.');
-            return;
-        }
         api.login(username, password).then(data => {
             if (data.status === 'success') {
                 loadDashboard(data.username);
@@ -291,19 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const username = registerUsernameInput.value;
         const password = registerPasswordInput.value;
-
-        if (!username || !password) {
-            registerErrorMessageDiv.textContent = 'Username and password are required.';
-            return;
-        }
-
-        registerErrorMessageDiv.textContent = ''; // Clear previous errors
-
         api.register(username, password)
             .then(data => {
                 if (data.status === 'success') {
-                    registerForm.style.display = 'none';
-                    loginForm.style.display = 'block';
                     showLoginView();
                     alert('Registration successful! Please log in.');
                 } else {
@@ -311,8 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .catch(err => {
-                console.error("Registration API call failed:", err); // DEBUG
-                registerErrorMessageDiv.textContent = 'An unexpected error occurred. Please try again.';
+                registerErrorMessageDiv.textContent = 'An unexpected error occurred.';
             });
     });
 
@@ -335,19 +367,17 @@ document.addEventListener('DOMContentLoaded', () => {
        }
     });
 
-    feedbackOkBtn.addEventListener('click', () => { // Event listener for new OK button
-        feedbackOverlay.classList.remove('show');
-        isFeedbackShowing = false;
-        // Wait for the transition out to complete before processing the next message
-        // This ensures the current overlay transitions out before the next one potentially transitions in
-        setTimeout(() => {
-            processFeedbackQueue();
-        }, 500); // 500ms matches the CSS transition duration
+    feedbackOkBtn.addEventListener('click', hideFeedback);
+    feedbackCancelBtn.addEventListener('click', hideFeedback);
+    feedbackConfirmBtn.addEventListener('click', () => {
+        if (typeof confirmationCallback === 'function') {
+            confirmationCallback();
+        }
+        hideFeedback();
     });
 
     // --- Initialization ---
     const init = () => {
-        // Check session on load
         api.checkSession().then(data => {
             if (data.logged_in) {
                 loadDashboard(data.username);
@@ -356,7 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Re-enabled Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/js/sw.js')
                 .then(reg => console.log('Service Worker registered'))

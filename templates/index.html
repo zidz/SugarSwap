@@ -64,6 +64,10 @@
                     <h2>Streak</h2>
                     <p><span id="streak-stat">0</span> days <span class="fire-emoji">🔥</span></p>
                 </div>
+                <div class="stat-card" id="sugar-consumed-card">
+                    <h2 class="danger-text">Sugar Drank</h2>
+                    <p><span id="sugar-consumed-stat">0</span> g</p>
+                </div>
             </div>
 
             <!-- FAB moved inside dashboard view -->
@@ -92,7 +96,11 @@
         <div id="feedback-overlay">
             <h2 id="feedback-title"></h2>
             <p id="feedback-text"></p>
-            <button id="feedback-ok-btn">OK</button>
+            <div class="feedback-buttons">
+                <button id="feedback-confirm-btn">Confirm</button>
+                <button id="feedback-cancel-btn">Cancel</button>
+                <button id="feedback-ok-btn">OK</button>
+            </div>
         </div>
     </div>
 
