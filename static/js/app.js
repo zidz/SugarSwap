@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fireEmoji = document.querySelector('.fire-emoji');
     const sugarConsumedStat = document.getElementById('sugar-consumed-stat');
     const sugarCubesConsumedStat = document.getElementById('sugar-cubes-consumed-stat');
+    const dailySugarPercentStat = document.getElementById('daily-sugar-percent-stat');
     const xpStat = document.getElementById('xp-stat');
     const xpToNextLevelStat = document.getElementById('xp-to-next-level-stat');
     const xpBar = document.getElementById('xp-bar');
@@ -50,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let state = {};
     let html5QrCode;
     const NEMESIS_SUGAR_PER_100ML = 10.6;
+    const DAILY_RECOMMENDED_SUGAR_G = 75; // 75 grams as per user's recommendation
     let saveDataTimeout;
     let feedbackQueue = [];
     let isFeedbackShowing = false;
@@ -173,6 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
         streakStat.textContent = state.gamification_state.streaks.current_streak_days;
         sugarConsumedStat.textContent = state.gamification_state.lifetime_stats.total_sugar_consumed_g.toFixed(1);
         sugarCubesConsumedStat.textContent = Math.floor(state.gamification_state.lifetime_stats.total_sugar_consumed_g / 3);
+        
+        // Calculate and display daily percentage
+        const dailyPercentage = (state.gamification_state.lifetime_stats.total_sugar_consumed_g / DAILY_RECOMMENDED_SUGAR_G) * 100;
+        dailySugarPercentStat.textContent = dailyPercentage.toFixed(0);
 
         if (state.gamification_state.streaks.current_streak_days >= 2) {
             fireEmoji.style.display = 'inline';
