@@ -440,8 +440,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/js/sw.js')
-                .then(reg => console.log('Service Worker registered'))
+            navigator.serviceWorker.register('/static/js/sw.js', { scope: '/' }) // Explicitly set scope to root
+                .then(reg => console.log('Service Worker registered with scope: /'))
                 .catch(err => console.log('Service Worker not registered', err));
         }
     };
