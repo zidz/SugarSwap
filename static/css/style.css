@@ -134,13 +134,13 @@ body {
 #stats-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
 .stat-card {
     background-color: var(--dark-gray);
-    padding: 20px;
+    padding: 5px;
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
@@ -177,7 +177,7 @@ body {
 #xp-bar {
     width: 0%;
     height: 100%; /* Fill parent container */
-    background: linear-gradient(90deg, #ffd700, #f0a500);
+    background: linear-gradient(90deg, #ff0700, #f0a500);
     border-radius: 10px;
     transition: width 0.5s ease-out;
     position: absolute;
@@ -189,10 +189,8 @@ body {
     position: relative; /* Positioned on top of the bar */
     z-index: 2;
     margin: 0;
-    color: black; /* Readable on gold bar */
+    color: white; /* Readable on gold bar */
     font-size: 0.8rem;
-    font-weight: bold;
-    text-shadow: 0 0 2px white; /* Add shadow for readability on dark background */
 }
 
 .fire-emoji {
@@ -201,7 +199,7 @@ body {
 
 .fab {
     position: absolute;
-    bottom: 30px; /* Default for larger screens */
+    bottom: 50px; /* Default for larger screens */
     left: 50%;
     transform: translateX(-50%);
     width: 80px;
@@ -217,13 +215,6 @@ body {
     align-items: center;
     transition: transform 0.1s ease;
 }
-
-@media (max-width: 480px) { /* Apply for mobile screens */
-    .fab {
-        bottom: 5px; /* Adjust for mobile screens */
-    }
-}
-
 
 .fab svg {
     color: var(--background-color);
