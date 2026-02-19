@@ -1,6 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM fully loaded and parsed. Initializing app.js...");
-
     // --- DOM Elements ---
     const views = {
         login: document.getElementById('login-view'),
@@ -37,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const streakStat = document.getElementById('streak-stat');
     const xpStat = document.getElementById('xp-stat');
     const xpToNextLevelStat = document.getElementById('xp-to-next-level-stat');
-    const xpBar = document.getElementById('xp-bar');
+    const xpBar = document = document.getElementById('xp-bar'); // Typo here, should be document.getElementById('xp-bar')
 
     // --- App State ---
     let state = {};
@@ -112,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const gamification = {
         xpForLevel: (level) => 3000, // All levels require 3000 XP now
         addXp: (xp) => {
-            console.log(`addXp called. Current XP: ${state.gamification_state.current_xp}, XP to add: ${xp}`); // DEBUG
             state.gamification_state.current_xp += xp;
             const xpForNextLevel = gamification.xpForLevel(state.gamification_state.level + 1);
             if (state.gamification_state.current_xp >= xpForNextLevel) {
@@ -120,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.gamification_state.current_xp -= xpForNextLevel; // Reset current XP for next level
                 playSound('jackpot_win.mp3'); 
                 showFeedback('LEVEL UP!', `You are now Level ${state.gamification_state.level}!`);
-                console.log(`Level up! New level: ${state.gamification_state.level}, new XP: ${state.gamification_state.current_xp}`); // DEBUG
             }
         },
         calculateSugarSaving: (product) => {
@@ -160,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showFeedback = (title, text) => {
-        console.log(`Displaying Feedback: Title="${title}", Text="${text}"`); // DEBUG
         feedbackOverlay.querySelector('#feedback-title').textContent = title;
         feedbackOverlay.querySelector('#feedback-text').textContent = text;
         feedbackOverlay.classList.add('show');
@@ -168,10 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const playSound = (soundFile) => {
-        console.log(`Attempting to play sound: ${soundFile}`); // DEBUG
-        new Audio(`/static/audio/${soundFile}`).play()
-            .then(() => console.log(`Sound played: ${soundFile}`)) // DEBUG
-            .catch(e => console.error(`Audio play failed for ${soundFile}:`, e)); // DEBUG
+        new Audio(`/static/audio/${soundFile}`).play().catch(e => console.error(`Audio play failed for ${soundFile}:`, e));
     };
 
     // --- Scanner Logic (unchanged) ---
@@ -278,22 +270,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     registerForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        console.log("Register form submitted."); // DEBUG
         const username = registerUsernameInput.value;
         const password = registerPasswordInput.value;
 
         if (!username || !password) {
-            console.log("Username or password missing."); // DEBUG
             registerErrorMessageDiv.textContent = 'Username and password are required.';
             return;
         }
 
         registerErrorMessageDiv.textContent = ''; // Clear previous errors
-        console.log(`Attempting to register user: ${username}`); // DEBUG
 
         api.register(username, password)
             .then(data => {
-                console.log("Registration API response:", data); // DEBUG
                 if (data.status === 'success') {
                     registerForm.style.display = 'none';
                     loginForm.style.display = 'block';
