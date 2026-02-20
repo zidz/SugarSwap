@@ -171,7 +171,7 @@ def save_user_data():
 # --- OpenFoodFacts Proxy ---
 @app.route("/api/proxy/product/<barcode>")
 def product_proxy(barcode):
-    api_url = f"https://world.openfoodfacts.net/api/v2/product/{barcode}.json"
+    api_url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
     try:
         response = requests.get(api_url, verify=False)
         response.raise_for_status()
@@ -181,10 +181,19 @@ def product_proxy(barcode):
 
         product = data.get('product', {})
         product_quantity = product.get('product_quantity')
+        
+        # Fallback if product_quantity is not provided but quantity string is
+        if not product_quantity:
+            import re
+            q_str = product.get('quantity', '')
+            match = re.search(r'([\d.]+)', str(q_str))
+            if match:
+                product_quantity = match.group(1)
+
         sugars_100g = product.get('nutriments', {}).get('sugars_100g')
 
         total_sugar = None
-        if product_quantity and sugars_100g:
+        if product_quantity is not None and sugars_100g is not None:
             try:
                 total_sugar = (float(product_quantity) / 100) * float(sugars_100g)
             except (ValueError, TypeError):

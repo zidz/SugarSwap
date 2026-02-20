@@ -2,4 +2,28 @@
 
 ## TODO
 
-* Lägg till en card-stat som skall vara en knapp som skall heta Badges, när man klickar på den skall man få upp en snygg lista med alla achivement badges man har samlat ihop. Man skall få achivement badges vid var 10'e level upp till level 100. Skapa roliga titlar och ikoner till dessa badges.
+* Om ingen kamera hittas, låt användaren mata in barcode'n manuellt.
+
+
+With 
+
+openfoodfacts.sh
+I get the following data:
+./openfoodfacts.sh 5000112667646
+Fetching data for barcode: 5000112667646...
+------------------------------------------------
+Product:  Fanta orange low calorie
+Brand:    Coca-Cola company
+Size:     330ml
+------------------------------------------------
+Sugar per 100ml: 4 g
+TOTAL SUGAR:     13.2 g
+------------------------------------------------
+
+But 
+
+app.py
+
+app.js
+says "You consumed ~0.0g of sugar.", what is wrong in the python program?
+I want my python program to show and store the total suger amount of a soda when it's registered.
