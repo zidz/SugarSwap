@@ -81,7 +81,8 @@ def register():
                 "daily_sugar_consumed_g": 0, # New field for daily tracking
                 "last_consumed_date": None # New field to track last consumption date
             },
-            "streaks": {"current_streak_days": 0, "last_log_date": None}
+            "streaks": {"current_streak_days": 0, "last_log_date": None},
+            "badges": []
         },
         "product_cache": {}
     }
@@ -170,13 +171,34 @@ def save_user_data():
 # --- OpenFoodFacts Proxy ---
 @app.route("/api/proxy/product/<barcode>")
 def product_proxy(barcode):
-    api_url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
+    api_url = f"https://world.openfoodfacts.net/api/v2/product/{barcode}.json"
     try:
-        response = requests.get(api_url, verify=False) # <--- ADDED verify=False
+        response = requests.get(api_url, verify=False)
         response.raise_for_status()
         data = response.json()
         if data.get("status") == 0 or "product" not in data:
             return jsonify({"status": "error", "message": "Product not found"}), 404
+
+        product = data.get('product', {})
+        product_quantity = product.get('product_quantity')
+        sugars_100g = product.get('nutriments', {}).get('sugars_100g')
+
+        total_sugar = None
+        if product_quantity and sugars_100g:
+            try:
+                total_sugar = (float(product_quantity) / 100) * float(sugars_100g)
+            except (ValueError, TypeError):
+                total_sugar = None # Or some other default/error value
+
+        # Pass the total calculated container sugar into `sugars_serving`
+        # so the frontend calculates the intake correctly.
+        # We leave `sugars_100g` alone so the frontend can accurately 
+        # determine if a drink is sugar-free (< 0.5g/100ml).
+        if total_sugar is not None:
+            if 'nutriments' not in data['product']:
+                data['product']['nutriments'] = {}
+            data['product']['nutriments']['sugars_serving'] = total_sugar
+
         return jsonify(data)
     except requests.exceptions.RequestException as e:
         app.logger.error(f"Error proxying request for barcode {barcode}: {e}")

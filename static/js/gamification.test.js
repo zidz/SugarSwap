@@ -46,6 +46,10 @@
             }
             return 0;
         },
+        calculateSugarIntake: (product) => {
+            const sugarServing = product.nutriments?.sugars_serving || 0;
+            return sugarServing;
+        },
         updateStreak: () => {
             const today = new Date(state.now).toISOString().split('T')[0];
             const lastLog = state.gamification_state.streaks.last_log_date;
@@ -119,6 +123,16 @@
         state.now = new Date("2026-02-21T10:00:00Z").getTime(); // last log was 19th
         gamification.updateStreak();
         assertEquals(8, state.gamification_state.streaks.current_streak_days, "Streak should be reduced by 20% after a missed day");
+    });
+
+    test("Sugar Intake Calculation", () => {
+        const productWithSugarServing = { nutriments: { sugars_serving: 25 } };
+        const productWithoutSugarServing = { nutriments: {} };
+        const productWithZeroSugarServing = { nutriments: { sugars_serving: 0 } };
+
+        assertEquals(25, gamification.calculateSugarIntake(productWithSugarServing), "Should return sugars_serving when available");
+        assertEquals(0, gamification.calculateSugarIntake(productWithoutSugarServing), "Should return 0 when sugars_serving is missing");
+        assertEquals(0, gamification.calculateSugarIntake(productWithZeroSugarServing), "Should return 0 when sugars_serving is 0");
     });
 
     // --- Final Results ---

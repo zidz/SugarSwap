@@ -46,12 +46,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const xpToNextLevelStat = document.getElementById('xp-to-next-level-stat');
     const xpBar = document.getElementById('xp-bar');
     const xpText = document.getElementById('xp-text');
+    
+    // Badges
+    const badgesCard = document.getElementById('badges-card');
+    const badgesCountStat = document.getElementById('badges-count-stat');
+    const badgesOverlay = document.getElementById('badges-overlay');
+    const badgesCloseBtn = document.getElementById('badges-close-btn');
+    const badgesList = document.getElementById('badges-list');
+
 
     // --- App State ---
     let state = {};
     let html5QrCode;
     const NEMESIS_SUGAR_PER_100ML = 10.6;
     const DAILY_RECOMMENDED_SUGAR_G = 75; // 75 grams as per user's recommendation
+    const BADGES = [
+        { level: 10, id: 'novice', title: 'Novice No-Sugar', icon: '🥉' },
+        { level: 20, id: 'apprentice', title: 'Sugar-Free Apprentice', icon: '🥈' },
+        { level: 30, id: 'sensei', title: 'Sweetness Sensei', icon: '🥋' },
+        { level: 40, id: 'guardian', title: 'Glucose Guardian', icon: '🛡️' },
+        { level: 50, id: 'fighter', title: 'Fructose Fighter', icon: '🥊' },
+        { level: 60, id: 'slayer', title: 'Sucrose Slayer', icon: '⚔️' },
+        { level: 70, id: 'crusader', title: 'Candy Crusader', icon: '🏰' },
+        { level: 80, id: 'destroyer', title: 'Dessert Destroyer', icon: '💥' },
+        { level: 90, id: 'unsweetened', title: 'The Unsweetened', icon: '🧘' },
+        { level: 100, id: 'sovereign', title: 'Sugar Sovereign', icon: '👑' }
+    ];
     let saveDataTimeout;
     let feedbackQueue = [];
     let isFeedbackShowing = false;
@@ -114,6 +134,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!state.gamification_state.lifetime_stats.last_consumed_date) {
                 state.gamification_state.lifetime_stats.last_consumed_date = new Date().toISOString().split('T')[0];
             }
+             // Ensure badges array exists
+            if (!state.gamification_state.badges) {
+                state.gamification_state.badges = [];
+            }
             updateUI();
             showView('dashboard');
         }).catch(err => {
@@ -140,8 +164,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (state.gamification_state.current_xp >= xpForNextLevel) {
                 state.gamification_state.level++;
                 state.gamification_state.current_xp -= xpForNextLevel;
-                playSound('jackpot_win.mp3'); 
+                playSound('jackpot_win.mp3');
                 feedbackQueue.push({ title: 'LEVEL UP!', text: `You are now Level ${state.gamification_state.level}!`, type: 'ok' });
+
+                // Check for new badge
+                const newBadge = BADGES.find(b => b.level === state.gamification_state.level);
+                if (newBadge && !state.gamification_state.badges.includes(newBadge.id)) {
+                    state.gamification_state.badges.push(newBadge.id);
+                    feedbackQueue.push({ title: 'Badge Unlocked!', text: `You've earned the "${newBadge.title}" badge!`, type: 'ok' });
+                }
             }
         },
         calculateSugarSaving: (product) => {
@@ -153,9 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return 0;
         },
         calculateSugarIntake: (product) => {
-            const servingSizeMl = parseFloat(product.serving_size?.match(/(\\d+)/)?.[0] || 330);
-            const sugarPer100g = product.nutriments?.sugars_100g || 0;
-            return (servingSizeMl / 100) * sugarPer100g;
+            const sugarServing = product.nutriments?.sugars_serving || 0;
+            return sugarServing;
         },
         updateStreak: () => {
             const today = new Date().toISOString().split('T')[0];
@@ -197,6 +227,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const xpForNextLevel = gamification.xpForLevel(state.gamification_state.level + 1);
         xpText.innerHTML = `<span id="xp-stat">${state.gamification_state.current_xp.toFixed(0)}</span> / <span id="xp-to-next-level-stat">${xpForNextLevel}</span> Level XP`;
         xpBar.style.width = `${(state.gamification_state.current_xp / xpForNextLevel) * 100}%`;
+        
+        // Update badges count
+        badgesCountStat.textContent = state.gamification_state.badges.length;
+    };
+
+    const renderBadges = () => {
+        badgesList.innerHTML = '';
+        BADGES.forEach(badge => {
+            const isUnlocked = state.gamification_state.badges.includes(badge.id);
+            const badgeEl = document.createElement('div');
+            badgeEl.className = 'badge';
+            if (!isUnlocked) {
+                badgeEl.classList.add('locked');
+            }
+            
+            badgeEl.innerHTML = `
+                <div class="badge-icon">${isUnlocked ? badge.icon : '❓'}</div>
+                <div class="badge-title">${isUnlocked ? badge.title : '???'}</div>
+                <div class="badge-level">Level ${badge.level}</div>
+            `;
+            badgesList.appendChild(badgeEl);
+        });
     };
 
     // --- Feedback Queue Management ---
@@ -250,9 +302,8 @@ document.addEventListener('DOMContentLoaded', () => {
         gamification.updateStreak();
         
         showFeedback('Healthy Choice!', `You logged 33cl of water. +${xpGained.toFixed(0)} XP`, 'ok');
-        playSound('scan_success.mp3');
-        
-        updateUI();
+
+	updateUI();
         debouncedSave();
     };
 
@@ -291,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const onScanSuccess = (decodedText, decodedResult) => {
         stopScanner();
+        playSound('scan_success.mp3');
         handleBarcode(decodedText);
     };
     
@@ -336,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
             state.gamification_state.lifetime_stats.total_sugar_saved_g += sugarSaved;
             gamification.addXp(xpGained);
             showFeedback('CRITICAL HIT!', `You avoided ${sugarSaved.toFixed(1)}g of sugar! +${xpGained.toFixed(0)} XP`, 'ok');
-            playSound('scan_success.mp3');
             confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
         } else { // Sugary choice
              if (!state.gamification_state.lifetime_stats.total_sugar_consumed_g) {
@@ -418,6 +469,21 @@ document.addEventListener('DOMContentLoaded', () => {
            stopScanner();
            handleBarcode(barcode);
        }
+    });
+
+    badgesCard.addEventListener('click', () => {
+        renderBadges();
+        badgesOverlay.classList.add('show');
+    });
+
+    badgesCloseBtn.addEventListener('click', () => {
+        badgesOverlay.classList.remove('show');
+    });
+
+    badgesOverlay.addEventListener('click', (e) => {
+        if (e.target === badgesOverlay) {
+            badgesOverlay.classList.remove('show');
+        }
     });
 
     feedbackOkBtn.addEventListener('click', hideFeedback);

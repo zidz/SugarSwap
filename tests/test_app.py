@@ -2,6 +2,7 @@ import json
 import pytest
 from app import app, USERS_FILE
 import os
+from unittest.mock import patch, MagicMock
 
 @pytest.fixture
 def client():
@@ -102,4 +103,42 @@ def test_get_and_save_user_data(client):
     with open(USERS_FILE, 'r') as f:
         users = json.load(f)
         assert users['users']['testuser']['gamification_state']['level'] == 5
+
+@patch('app.requests.get')
+def test_product_proxy_success(mock_get, client):
+    """Test the product_proxy function with a successful API response."""
+    mock_get.return_value = MagicMock(
+        status_code=200,
+        json=lambda: {
+            "status": 1,
+            "product": {
+                "product_quantity": "500",
+                "nutriments": {
+                    "sugars_100g": "10"
+                }
+            }
+        }
+    )
+    
+    response = client.get('/api/proxy/product/1234567890123')
+    
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['status'] == 1
+    assert data['product']['nutriments']['sugars_100g'] == 50.0
+
+@patch('app.requests.get')
+def test_product_proxy_not_found(mock_get, client):
+    """Test the product_proxy function when the product is not found."""
+    mock_get.return_value = MagicMock(
+        status_code=200,
+        json=lambda: {"status": 0}
+    )
+
+    response = client.get('/api/proxy/product/1234567890123')
+
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data['status'] == 'error'
+    assert data['message'] == 'Product not found'
 

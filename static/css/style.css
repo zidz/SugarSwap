@@ -374,3 +374,115 @@ body {
 button:active {
     transform: scale(0.95);
 }
+
+/* Badges Styles */
+#badges-card {
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+#badges-card:hover {
+    background-color: #444; /* Slightly lighter gray */
+    transform: translateY(-2px);
+}
+
+#badges-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none; /* Initially hidden */
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+
+#badges-overlay.show {
+    display: flex; /* Show the overlay */
+}
+
+#badges-modal {
+    background-color: var(--dark-gray);
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    height: 70%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+    border: 1px solid var(--primary-color);
+    display: flex;
+    flex-direction: column;
+}
+
+#badges-close-btn {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+#badges-modal h2 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+#badges-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+    overflow-y: auto;
+    padding-right: 10px; /* For scrollbar */
+}
+
+.badge {
+    background-color: #444;
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+.badge-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.badge-title {
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.badge-level {
+    font-size: 0.8rem;
+    color: #ccc;
+}
+
+.badge.locked {
+    background-color: #222;
+    opacity: 0.5;
+}
+
+.badge.locked .badge-icon {
+    filter: grayscale(100%);
+}
+
+.badge.locked .badge-title {
+    color: #888;
+}
